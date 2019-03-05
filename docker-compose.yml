@@ -1,151 +1,83 @@
 version: "3.4"
 services:  
   traefik:
-
    image: traefik
-
    command: --api --docker
-
    deploy:
-
      placement:
-
        constraints: [node.role==manager]
-
      restart_policy:
-
        condition: on-failure
-
      labels:
-
        - "traefik.backend=traefik"
-
        - "traefik.docker.network=devsecops2"
-
        - "traefik.enable=true"
-
        - "traefik.port=8080"
-
        - "traefik.frontend.rule=Host:traefik.devsecops.com"
-
    ports:
-
      - "80:80"
-
      - "443:443"
-
      - "8080:8080"
-
    volumes:
-
      - /var/run/docker.sock:/var/run/docker.sock
-
      - /opt/traefik/traefik.toml:/traefik.toml
-
      - /opt/traefik/cert/:/certs/
-
    networks:
-
-     - devsecops2  jenkins:
-
+     - devsecops2 
+     
+  jenkins:
    image: 'jenkins/jenkins:lts'
-
    volumes:
-
      - jenkins:/var/jenkins_home
-
    networks:
-
      - devsecops2
-
    deploy:
-
      labels:
-
        - "traefik.backend=jenkins"
-
        - "traefik.docker.network=devsecops2"
-
        - "traefik.enable=true"
-
        - "traefik.port=8080"
-
-       - "traefik.frontend.rule=Host:jenkins.devsecops.com"  gitea:
-
+       - "traefik.frontend.rule=Host:jenkins.devsecops.com"  
+       
+  gitea:
    image: gitea/gitea:latest
-
    environment:
-
      - USER_UID=1000
-
      - USER_GID=1000
-
      - DB_TYPE=mysql
-
      - DB_HOST=db:3306
-
      - DB_NAME=gitea
-
      - DB_USER=gitea
-
      - DB_PASSWD=gitea
-
    volumes:
-
      - gitea:/data
-
    networks:
-
      - devsecops2
-
    deploy:
-
      labels:
-
        - "traefik.backend=gitea"
-
        - "traefik.docker.network=devsecops2"
-
        - "traefik.port=3000"
-
        - "traefik.enable=true"
-
-       - "traefik.frontend.rule=Host:gitea.devsecops.com"  db:
-
+       - "traefik.frontend.rule=Host:gitea.devsecops.com"  
+       
+  db:
    image: mysql:5.7
-
    environment:
-
      - MYSQL_ROOT_PASSWORD=gitea
-
      - MYSQL_USER=gitea
-
      - MYSQL_PASSWORD=gitea
-
      - MYSQL_DATABASE=gitea
-
    volumes:
-
      - mysql:/var/lib/mysql
-
    networks:
-
      - devsecops2
-
    deploy:
-
      labels:
-
        - "traefik.enable=false"networks:
-
  devsecops2:
-
    external:
-
      name: devsecops2volumes:
-
  mysql:
-
  gitea:
-
  jenkins:
